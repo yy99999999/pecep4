@@ -18,23 +18,35 @@ dropped), and real execution costs. Negative results are kept, not hidden.
 
 ---
 
-## What's in here
+## Layout
 
-### Strategy code (`/`)
+The repo is split into two tracks, each self-contained in its own folder:
+
+```
+options/   — options volatility strategy (GEX-gated short-vol engine)
+indices/   — index tests: Market Profile (Dalton) + intermarket regime
+docs/      — research notes, project map, idea backlog
+```
+
+### `options/` — options vol strategy
 | File | What it does |
 |------|--------------|
-| [`intrinio_options.py`](intrinio_options.py) | EOD options-chain fetcher (cache + resume), **self-computed IV/greeks** (vendor-independent), and VRP / IV-surface / **GEX** / positioning features. |
-| [`intermarket_lab.py`](intermarket_lab.py) | Intermarket & macro **regime engine** (GMM), plus vol-term / credit crisis-filter features from FRED. No Market Profile. |
-| [`amt_classify.py`](amt_classify.py) | **Market Profile / Dalton** primitives — value area, POC, HVN/LVN, day-type classification. |
-| [`backtest.py`](backtest.py) | Consolidated point-in-time backtest of the short-vol engine (1DTE iron condor, GEX+macro gate, inverse-IV sizing). Honest marks, held-to-expiry. |
-| [`live_signal.py`](live_signal.py) | Daily live signal for the same engine — same code path backtest ↔ live. |
+| [`intrinio_options.py`](options/intrinio_options.py) | EOD options-chain fetcher (cache + resume), **self-computed IV/greeks** (vendor-independent), and VRP / IV-surface / **GEX** / positioning features. |
+| [`backtest.py`](options/backtest.py) | Consolidated point-in-time backtest of the short-vol engine (1DTE iron condor, GEX+macro gate, inverse-IV sizing). Honest marks, held-to-expiry. |
+| [`live_signal.py`](options/live_signal.py) | Daily live signal for the same engine — same code path backtest ↔ live. |
+| [`options_vrp_gex.ipynb`](options/options_vrp_gex.ipynb) | **Main options study** — VRP premium, GEX→vol, nested incrementality, direction (FDR), matched-horizon, subperiod, P&L, cost-sweep, dealer-vs-retail positioning, stress episodes. |
 
-### Notebooks (`notebooks/`)
-| Notebook | Focus |
-|----------|-------|
-| [`options_vrp_gex.ipynb`](notebooks/options_vrp_gex.ipynb) | **Main options study** — VRP premium, GEX→vol, nested incrementality, direction (FDR), matched-horizon, subperiod, P&L, cost-sweep, dealer-vs-retail positioning, stress episodes. |
-| [`intermarket_regime.ipynb`](notebooks/intermarket_regime.ipynb) | Intermarket/macro regime model as a forward volatility predictor. |
-| [`amt_stats.ipynb`](notebooks/amt_stats.ipynb) | Market Profile statistical test suite on ES (2010–2026). |
+### `indices/` — index tests
+| File | What it does |
+|------|--------------|
+| [`amt_classify.py`](indices/amt_classify.py) | **Market Profile / Dalton** primitives — value area, POC, HVN/LVN, day-type classification. |
+| [`intermarket_lab.py`](indices/intermarket_lab.py) | Intermarket & macro **regime engine** (GMM), plus vol-term / credit crisis-filter features from FRED. No Market Profile. |
+| [`amt_stats.ipynb`](indices/amt_stats.ipynb) | Market Profile statistical test suite on ES (2010–2026). |
+| [`intermarket_regime.ipynb`](indices/intermarket_regime.ipynb) | Intermarket/macro regime model as a forward volatility predictor. |
+
+> **Cross-track dependency:** the options engine reuses `indices/intermarket_lab.py`
+> for its macro crisis-filter (vol-term / credit). `backtest.py`, `live_signal.py` and
+> `options_vrp_gex.ipynb` load it from `../indices/`, so keep both folders side by side.
 
 ### Research notes (`docs/`)
 Design docs, the running project map, and the idea backlog — including the honest
@@ -94,13 +106,15 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 # backtest the short-vol engine (caches features on first run)
-python backtest.py --ref-iv 0.14 --base 1
+python options/backtest.py --ref-iv 0.14 --base 1
 
 # emit today's live signal (falls back to latest cached EOD if today unpublished)
-python live_signal.py --use-cache
+python options/live_signal.py --use-cache
 ```
 
-Notebooks run under Jupyter once the data above is in place.
+Notebooks run under Jupyter once the data above is in place. Launch Jupyter from
+inside the notebook's own folder (`options/` or `indices/`) so the relative module
+paths resolve.
 
 ---
 
