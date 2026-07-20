@@ -1,0 +1,34 @@
+# secrets — never commit
+.intrinio_key
+.env
+*.key
+lse_api.py
+
+# large / licensed local data (Databento, Intrinio, derived caches)
+data/
+cache/
+202106/
+spx_eod_*/
+SP500_*.csv
+*.dbn
+*.parquet
+
+# logs & run artifacts
+*.log
+signals_log.csv
+cron_signal.log
+backtest_results.png
+
+# python / env
+__pycache__/
+*.pyc
+.venv/
+vbt-env/
+
+# jupyter
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+*.claude-edits.ipynb
+
+# os
+.DS_Store
