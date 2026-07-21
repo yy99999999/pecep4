@@ -45,7 +45,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
+HERE      = os.path.dirname(os.path.abspath(__file__))   # this script's folder
 DATA = os.path.join(ROOT, 'data')
 TZ   = 'America/New_York'
 SNAP = 10 * 60 + 30        # 10:30 ET — end of the initial balance
@@ -212,7 +213,7 @@ def main():
         ax.set_xlabel('days sorted')
 
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    out = os.path.join(ROOT, 'iv_smoke_test.png')
+    out = os.path.join(HERE, 'iv_smoke_test.png')
     fig.savefig(out, dpi=110); log.info('saved figure → %s', out)
 
     print('\n' + '=' * 76)

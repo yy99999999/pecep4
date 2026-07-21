@@ -33,7 +33,8 @@ import os, importlib.util, logging
 import numpy as np
 import pandas as pd
 
-import session               # DST-aware cash session (see session.py)
+import sys; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import session               # DST-aware cash session (indices/session.py)
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
@@ -43,7 +44,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT      = os.path.dirname(os.path.abspath(__file__))
+ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
+HERE      = os.path.dirname(os.path.abspath(__file__))   # this script's folder
 CACHE     = os.path.join(ROOT, 'cache')
 SEED      = 7
 SPLIT     = pd.Timestamp('2024-01-01')      # options data starts 2021-09
@@ -68,7 +70,7 @@ def build():
     es.index = pd.to_datetime(es.index)
     rth = session.get_rth(es)
     days = pd.read_parquet(os.path.join(CACHE, 'es_days.parquet')); days.index = pd.to_datetime(days.index)
-    ib_m = _load('ib_ae', os.path.join(ROOT, 'ib_type_autoencoder.py'))
+    ib_m = _load('ib_ae', os.path.join(ROOT, 'autoencoders', 'ib_type_autoencoder.py'))
 
     # realised vols
     rth2 = rth.copy(); rth2['date'] = rth2.index.normalize()
@@ -209,7 +211,7 @@ def main():
     ax.text(0, 1, '\n'.join(L), va='top', ha='left', fontsize=8, family='monospace')
 
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    out = os.path.join(ROOT, 'vol_incrementality.png')
+    out = os.path.join(HERE, 'vol_incrementality.png')
     fig.savefig(out, dpi=110); log.info('saved figure → %s', out)
 
     print('\n' + '=' * 78)

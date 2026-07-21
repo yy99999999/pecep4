@@ -29,7 +29,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 from scipy import stats
 
-ROOT  = os.path.dirname(os.path.abspath(__file__))
+ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
 CACHE = os.path.join(ROOT, 'cache')
 SEED  = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
@@ -129,7 +129,7 @@ def main():
     es = pd.read_parquet(os.path.join(CACHE, 'es_continuous.parquet'))
     es.index = pd.to_datetime(es.index)
     vix = pd.read_parquet(os.path.join(CACHE, 'vix_daily.parquet')); vix.index = pd.to_datetime(vix.index)
-    ib_m = _load('ib_ae', os.path.join(ROOT, 'ib_type_autoencoder.py'))
+    ib_m = _load('ib_ae', os.path.join(ROOT, 'autoencoders', 'ib_type_autoencoder.py'))
 
     res = {m: run(m, es, ib_m, vix) for m in ['legacy', 'correct']}
 

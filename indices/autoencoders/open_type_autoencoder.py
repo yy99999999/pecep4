@@ -31,7 +31,8 @@ import os, argparse, logging
 import numpy as np
 import pandas as pd
 
-import session               # DST-aware cash session (see session.py)
+import sys; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import session               # DST-aware cash session (indices/session.py)
 
 import torch
 import torch.nn as nn
@@ -44,7 +45,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT      = os.path.dirname(os.path.abspath(__file__))
+ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
+HERE      = os.path.dirname(os.path.abspath(__file__))   # this script's folder
 CACHE     = os.path.join(ROOT, 'cache')
 SEED      = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
@@ -156,7 +158,7 @@ def main():
     ap.add_argument('--latent', type=int, default=8)
     ap.add_argument('--k', type=int, default=4, help='archetypes (Dalton has 4 open types)')
     ap.add_argument('--epochs', type=int, default=80)
-    ap.add_argument('--out', default=os.path.join(ROOT, 'open_type_ae.png'))
+    ap.add_argument('--out', default=os.path.join(HERE, 'open_type_ae.png'))
     args = ap.parse_args()
 
     log.info('loading RTH bars …')
