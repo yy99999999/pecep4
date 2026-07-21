@@ -38,7 +38,7 @@ def _load(name, path):
 
 iopt = _load('intrinio_options', f'{ROOT}/intrinio_options.py')
 # intermarket_lab lives in the sibling indices/ track (shared macro/vol-credit engine)
-il   = _load('intermarket_lab',  f'{ROOT}/../indices/core/intermarket_lab.py')
+il   = _load('intermarket_lab',  f'{ROOT}/../indices/intermarket_lab.py')
 
 
 @dataclass

@@ -86,7 +86,7 @@ def main():
     ap.add_argument('--symbols', nargs='+', default=['es', 'nq'])
     args = ap.parse_args()
 
-    mod = _load('amt_classify', os.path.join(ROOT, 'core', 'amt_classify.py'))
+    mod = _load('amt_classify', os.path.join(ROOT, 'amt_classify.py'))
 
     for sym in [s.lower() for s in args.symbols]:
         cont = os.path.join(CACHE, f'{sym}_continuous.parquet')

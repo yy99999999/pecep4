@@ -18,6 +18,6 @@ python options/backtest.py --ref-iv 0.14 --base 1
 python options/live_signal.py --use-cache
 ```
 
-**Dependency:** loads `../indices/core/intermarket_lab.py` for the macro crisis-filter —
+**Dependency:** loads `../indices/intermarket_lab.py` for the macro crisis-filter —
 keep the `indices/` folder alongside. Keys via env (`INTRINIO_API_KEY`, `FRED_API_KEY`)
 or `~/.intrinio_key`; data is licensed and not included (see root README).

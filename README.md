@@ -37,25 +37,16 @@ docs/      — research notes, project map, idea backlog
 | [`options_vrp_gex.ipynb`](options/options_vrp_gex.ipynb) | **Main options study** — VRP premium, GEX→vol, nested incrementality, direction (FDR), matched-horizon, subperiod, P&L, cost-sweep, dealer-vs-retail positioning, stress episodes. |
 
 ### `indices/` — index tests
+| File | What it does |
+|------|--------------|
+| [`amt_classify.py`](indices/amt_classify.py) | **Market Profile / Dalton** primitives — value area, POC, HVN/LVN, day-type classification. |
+| [`intermarket_lab.py`](indices/intermarket_lab.py) | Intermarket & macro **regime engine** (GMM), plus vol-term / credit crisis-filter features from FRED. No Market Profile. |
+| [`amt_stats.ipynb`](indices/amt_stats.ipynb) | Market Profile statistical test suite on ES (2010–2026). |
+| [`intermarket_regime.ipynb`](indices/intermarket_regime.ipynb) | Intermarket/macro regime model as a forward volatility predictor. |
 
-Grouped by role; see [`indices/README.md`](indices/README.md) for the full write-up.
-
-| Folder | What it holds |
-|--------|---------------|
-| [`session.py`](indices/session.py) | **DST-aware cash session — the single source of truth.** The old fixed-UTC window was EST-only, so 65% of days were silently measured on 10:30–17:00 ET. |
-| [`core/`](indices/core) | Dalton Market Profile (`amt_classify.py`), the intermarket GMM regime engine (`intermarket_lab.py`), and the two notebooks. |
-| [`autoencoders/`](indices/autoencoders) | Unsupervised PyTorch embeddings of day shape, opening trajectory and Initial-Balance structure; taxonomy size by BIC argmin. |
-| [`structure_tests/`](indices/structure_tests) | Can one structure predict another (day type / IB type / opening type)? **All null** — and the apparent day-type skill turned out to be label mechanics. |
-| [`vol_tests/`](indices/vol_tests) | IB structure → post-IB volatility (**OOS R² 0.52, ΔR² +0.34**), plus the three monetisation tests that closed it: delta-one, incrementality, and the 0DTE-IV smoke test. |
-
-**Headline:** the first hour genuinely forecasts the volatility of the rest of the day —
-but it is **not tradeable**: no directional edge (Spearman with trade P&L −0.017), and
-against the contemporaneous 10:30 0DTE price the increment is ~zero on both SPY and QQQ.
-Standing use is risk normalisation, not alpha.
-
-> **Cross-track dependency:** the options engine reuses `indices/core/intermarket_lab.py`
+> **Cross-track dependency:** the options engine reuses `indices/intermarket_lab.py`
 > for its macro crisis-filter (vol-term / credit). `backtest.py`, `live_signal.py` and
-> `options_vrp_gex.ipynb` load it from `../indices/core/`, so keep both folders side by side.
+> `options_vrp_gex.ipynb` load it from `../indices/`, so keep both folders side by side.
 
 ### Research notes (`docs/`)
 Design docs, the running project map, and the idea backlog — including the honest

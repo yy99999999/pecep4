@@ -27,8 +27,7 @@ import os, importlib.util, logging
 import numpy as np
 import pandas as pd
 
-import sys; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import session               # DST-aware cash session (indices/session.py)
+import session               # DST-aware cash session (see session.py)
 
 import torch
 from sklearn.preprocessing import StandardScaler
@@ -40,8 +39,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
-HERE      = os.path.dirname(os.path.abspath(__file__))   # this script's folder
+ROOT      = os.path.dirname(os.path.abspath(__file__))
 CACHE     = os.path.join(ROOT, 'cache')
 SEED      = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
@@ -107,7 +105,7 @@ def build_dataset():
     days = pd.read_parquet(os.path.join(CACHE, 'es_days.parquet'))
     days.index = pd.to_datetime(days.index)
 
-    ib = _load('ib_ae', os.path.join(ROOT, 'autoencoders', 'ib_type_autoencoder.py'))
+    ib = _load('ib_ae', os.path.join(ROOT, 'ib_type_autoencoder.py'))
     log.info('rebuilding IB structural descriptors + IB types (k=%d) …', K_IB)
     F = ib.build_ib_features(rth, days, bins=24)
     F = F.dropna(subset=ib.FEATURES)
@@ -294,7 +292,7 @@ def main():
     axF.text(0, 1, verdict, va='top', ha='left', fontsize=9, family='monospace')
 
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    out = os.path.join(HERE, 'predict_day_type.png')
+    out = os.path.join(ROOT, 'predict_day_type.png')
     fig.savefig(out, dpi=110)
     log.info('saved figure → %s', out)
 

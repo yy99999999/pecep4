@@ -33,8 +33,7 @@ import os, argparse, importlib.util, logging
 import numpy as np
 import pandas as pd
 
-import sys; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import session               # DST-aware cash session (indices/session.py)
+import session
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
@@ -43,8 +42,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # indices/ root
-HERE      = os.path.dirname(os.path.abspath(__file__))   # this script's folder
+ROOT  = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(ROOT, 'cache')
 SEED  = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
@@ -79,7 +77,7 @@ def build():
     es.index = pd.to_datetime(es.index)
     rth = session.get_rth(es)
     days = pd.read_parquet(os.path.join(CACHE, 'es_days.parquet')); days.index = pd.to_datetime(days.index)
-    ib_m = _load('ib_ae', os.path.join(ROOT, 'autoencoders', 'ib_type_autoencoder.py'))
+    ib_m = _load('ib_ae', os.path.join(ROOT, 'ib_type_autoencoder.py'))
 
     rth2 = rth.copy(); rth2['date'] = rth2.index.normalize()
     rows = {}
@@ -255,7 +253,7 @@ def main():
     ax.text(0, 1, '\n'.join(L), va='top', ha='left', fontsize=8.5, family='monospace')
 
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    out = os.path.join(HERE, 'delta_one_ib_vol.png')
+    out = os.path.join(ROOT, 'delta_one_ib_vol.png')
     fig.savefig(out, dpi=110); log.info('saved figure → %s', out)
 
     print('\n' + '=' * 74)
