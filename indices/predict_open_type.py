@@ -173,7 +173,7 @@ def build():
 # ───────────────────────── main ─────────────────────────
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--kopen', type=int, default=0, help='0 = BIC elbow')
+    ap.add_argument('--kopen', type=int, default=0, help='0 = BIC argmin')
     ap.add_argument('--kmax', type=int, default=10)
     args = ap.parse_args()
 
@@ -193,7 +193,7 @@ def main():
     sel = pd.DataFrame(rows, columns=['k', 'BIC', 'AIC'])
     k_elbow = pick_elbow(sel['k'].values, sel['BIC'].values)
     k_min   = int(sel.loc[sel['BIC'].idxmin(), 'k'])
-    K = args.kopen if args.kopen > 0 else k_elbow
+    K = args.kopen if args.kopen > 0 else k_min          # BIC argmin drives
     log.info('opening-latent model selection:\n%s', sel.round(0).to_string(index=False))
     log.info('BIC argmin k=%d, elbow k=%d → using K=%d', k_min, k_elbow, K)
 
