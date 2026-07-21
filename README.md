@@ -37,12 +37,18 @@ docs/      — research notes, project map, idea backlog
 | [`options_vrp_gex.ipynb`](options/options_vrp_gex.ipynb) | **Main options study** — VRP premium, GEX→vol, nested incrementality, direction (FDR), matched-horizon, subperiod, P&L, cost-sweep, dealer-vs-retail positioning, stress episodes. |
 
 ### `indices/` — index tests
+Full write-up in [`indices/README.md`](indices/README.md).
+
 | File | What it does |
 |------|--------------|
+| [`session.py`](indices/session.py) | **DST-aware cash session — the single source of truth.** The old fixed-UTC window was EST-only, so 65% of days were silently measured on 10:30–17:00 ET. |
 | [`amt_classify.py`](indices/amt_classify.py) | **Market Profile / Dalton** primitives — value area, POC, HVN/LVN, day-type classification. |
 | [`intermarket_lab.py`](indices/intermarket_lab.py) | Intermarket & macro **regime engine** (GMM), plus vol-term / credit crisis-filter features from FRED. No Market Profile. |
-| [`amt_stats.ipynb`](indices/amt_stats.ipynb) | Market Profile statistical test suite on ES (2010–2026). |
+| [`amt_stats.ipynb`](indices/amt_stats.ipynb) | Market Profile statistical test suite on ES (2010–2026) — 25 cells, runs clean end-to-end. |
 | [`intermarket_regime.ipynb`](indices/intermarket_regime.ipynb) | Intermarket/macro regime model as a forward volatility predictor. |
+| `*_autoencoder.py` | Unsupervised PyTorch embeddings of day shape, opening trajectory and Initial-Balance structure; taxonomy size by BIC argmin. |
+| `predict_*.py` | Can one structure predict another (day / IB / opening type)? **All null** — the apparent day-type skill is label mechanics. |
+| `*_vol*.py`, `iv_smoke_test.py` | IB structure → post-IB volatility (**OOS R² 0.52, ΔR² +0.34**), plus the three monetisation tests that closed it. |
 
 > **Cross-track dependency:** the options engine reuses `indices/intermarket_lab.py`
 > for its macro crisis-filter (vol-term / credit). `backtest.py`, `live_signal.py` and
@@ -68,6 +74,12 @@ write-ups of what was **dropped and why** (`PROJECT.md`, `RESEARCH.md`,
   controls (vol-target, DD-cap, equity-kill) were net-negative. Wings (iron condor) cap
   an otherwise irreducible single-day gap tail (Monte-Carlo jump-diffusion: naked ruin
   ~3.5% → 0%).
+- ⚖️ **Intraday: the first hour forecasts the day's volatility — but it is not tradeable.**
+  IB structure predicts post-IB realised vol strongly (OOS R² 0.174 → **0.516**, ΔR² +0.342,
+  Q5/Q1 ×2.66). Three independent monetisation tests all fail: no directional edge
+  (Spearman with trade P&L −0.017), nothing to size without a base edge, and against the
+  contemporaneous 10:30 0DTE price the increment is ~zero on both SPY and QQQ. A useful
+  **risk-normalisation** input, not alpha.
 - ❌ **Direction** — no edge found anywhere, consistent across all work. **Vol and tails**
   are the predictable targets.
 
