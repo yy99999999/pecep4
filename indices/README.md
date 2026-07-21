@@ -40,19 +40,41 @@ significant (q down to 2.4e-05); decisive post-IB Dalton test — all q = 0.90.
 ## Neural structure models (PyTorch autoencoders)
 
 Unsupervised embeddings of intraday structure, each `AE → latent → clustering`, on
-ES 2010–2026 with an honest time split (train ≤2019 / test ≥2020). Taxonomy size is
-chosen by **BIC argmin** on train.
+ES 2010–2026 with an honest time split (train ≤2019 / test ≥2020).
 
 | File | What it learns |
 |------|----------------|
-| `day_shape_autoencoder.py` | Day **profile shape** (volume-by-price, range-normalised). Latent compresses 64→8 with almost no loss of day-type information; archetypes separate double-distribution from normal-variation. |
-| `open_type_autoencoder.py` | **Opening trajectory** (first 60 min, direction-invariant) + `open_location` context. Rediscovers drive / auction / reversal geometry unsupervised. |
-| `ib_type_autoencoder.py` | **Initial-Balance types** from 10 causal structural features. BIC/AIC selection over the latent. |
+| `day_shape_autoencoder.py` | Day **profile shape** (volume-by-price, range-normalised). Latent compresses 64→8 with almost no loss of day-type information. |
+| `open_type_autoencoder.py` | **Opening trajectory** (first 60 min, direction-invariant) + `open_location` context. |
+| `ib_type_autoencoder.py` | **Initial-Balance structure** from 10 causal features. |
+| `seed_stability.py` | Are the taxonomies reproducible, or artefacts of one seed? |
+| `consensus_clusters.py` | Seed-independent taxonomy by consensus over 30 autoencoder seeds. |
 
-**IB structure is a continuum, not discrete types.** BIC has only a shallow, non-robust
-minimum on a flat plateau while AIC diverges; the elbow sits at k=3 → *directional /
-reversal / wide-expansion*. No robust post-IB directional edge (only a weak
-anti-continuation lean in the reversal type, sub-cost).
+⚠️ **Most of the "archetypes" do not survive a seed test — read this before quoting them.**
+Method after Sinha et al. (EBioMedicine 2021), who found clustering results surviving in
+only 1–3 of 10 seed runs. Two layers, since a learned representation sits upstream:
+
+- **The clustering itself is fine**: with the autoencoder fixed, ARI across GMM seeds is
+  1.00 / 0.99 / 0.90. `n_init=25` plus GMM/BIC puts us in the stable, LCA-like class the
+  paper identified. The instability is **upstream, in the autoencoder's initialisation**:
+  retrain per seed and ARI collapses to 0.26 / 0.56 / 0.35, while BIC-argmin `k` itself
+  wanders (IB: 5–8). So `k` was never as principled as it looked.
+- Rather than hunt for a flattering seed (selection on the outcome), `consensus_clusters.py`
+  averages over 30: co-association matrix, `k` chosen by **PAC** (stability), not likelihood.
+- **day-shape and IB have NO reproducible taxonomy.** PAC falls monotonically to the sweep
+  boundary — the signature of no discrete structure — ARI(single seed vs consensus) ≈ 0.42,
+  and 50% (day-shape) to 66% (IB) of days sit below 0.5 membership confidence. The earlier
+  *directional / reversal / wide-expansion* labels were seed artefacts.
+- **The opening has exactly ONE stable structure, and it is BINARY.** Genuine interior PAC
+  minimum at k=2; ARI 0.825, 99.4% of days confident, share stable across the decade
+  (27.1% pre-2019 vs 29.9% post-2020): **continuation** (72%, canonical path +0.27 → +0.46)
+  vs **reversal** (28%, +0.15 → −0.28). It is shape, not size — mean IB range 0.551% vs
+  0.568%. `open_drive` is 13.5% of continuation and exactly **0.0%** of reversal; the
+  reversal cluster is 96% auction + rejection_reverse. Dalton's four opening types are a
+  subdivision of this one binary distinction. It says nothing about `day_type`.
+
+**The headline volatility result is unaffected** — it uses the raw IB features and never
+the clusters: deterministic R² 0.4990, versus 0.4286 ± 0.0247 for the latent across seeds.
 
 ## Structure tests — can one structure predict another?
 
@@ -71,8 +93,11 @@ all of it vanishes: every block sits at or below the majority baseline with posi
 the rule labels (χ² p=5e-4, 3/36 cells) — not in the unsupervised archetypes.
 
 **Across the board:** inside one hour structure is tightly linked; **across the day
-boundary almost nothing transfers.** Also confirmed 5× — discretising a continuum
-destroys signal, so use types for interpretation and continuous features for modelling.
+boundary almost nothing transfers.**
+
+**The rule this track earned, in three levels:** raw beats learned (deterministic features
+outscore the latent and carry no seed risk), continuous beats discrete (confirmed 5×;
+discretising the IB cost 6× the incremental R²), and consensus beats a lucky seed.
 
 ## Volatility tests — the one positive result, and why it is not tradeable
 
@@ -105,6 +130,34 @@ beyond IB *width* alone — that is the genuinely new content from the autoencod
 option stack, not *today's* price. R²=0.52 measured how much better the first hour is
 than yesterday's vol — not than the market. By 10:30 dealers have already repriced 0DTE
 to the actual IB. Power caveat: 30 days excludes a *large* edge, not a small one.
+
+## The premium itself — breadth, crises, and benchmarks
+
+| File | Role |
+|------|------|
+| `xasset_vrp.py` | Does the VRP exist outside equity indices (TLT/IEF/GLD/USO), and do the sleeves decorrelate? |
+| `vrp_stress_12y.py` | 12 years incl. Volmageddon and COVID — what does a vol seller actually survive? |
+| `audit_vol_benchmark.py` | Were the vol claims benchmarked against a real market forecast, or just trailing vol? |
+| `fill_feasibility.py` | Can the 1DTE condor actually be filled? (parked — needs quotes, not trades) |
+
+- **Cross-asset breadth fails on COSTS, not on premium.** Round-trip spread ranges 0.56 vol
+  points (SPY) to 8.98 (IEF) — a 16× spread. Only SPY clears its own cost (×1.59). USO has
+  the only nominally significant premium (+2.93 vp, p=0.05) and is eaten 2.6× by its own
+  7.77 spread. Diversification also fails on its own terms: mean correlation with SPY is
+  0.38, **rising to 0.54 in SPY's tail** — the wrong direction (n=5 there, so suggestive).
+  The ETF route is closed; options on futures (/ZB, /GC, /CL) are the open question.
+- **12-year crisis stress test.** Splicing new daily trade files (2014–2022) to the Intrinio
+  cache, validated on 159 truly overlapping days (bias −0.05 vp, corr 0.94): the premium is
+  **+0.90 vp over 12 years**, and the two eras agree (+0.88 pre-2021 vs +0.93 after) — the
+  recent sample was **not** flattering. But it is still not significant (t=1.40) because of
+  the tail: COVID −15.65 vp with a worst window of **−60.87** (sold vol at IV 12.2, realised
+  73.0), and **the worst 5% of periods give back 126% of everything the other 95% earned.**
+  This vindicates the condor's wings — the Monte-Carlo ruin estimate was not paranoid.
+- **Benchmark audit.** Every vol claim here was measured against *trailing realised* vol.
+  VIX(t−1) alone beats that benchmark (R² 0.133 vs 0.096), so ~45% of the apparent skill was
+  rediscovering what the market already priced (ΔR² of all features: +0.049 over trailing,
+  **+0.027** over trailing+VIX). Unlike the intraday case it does not vanish — but the rule
+  now is: **benchmark against the contemporaneous implied, never trailing realised.**
 
 ## Findings
 
