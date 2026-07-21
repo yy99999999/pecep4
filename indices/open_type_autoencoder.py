@@ -31,6 +31,8 @@ import os, argparse, logging
 import numpy as np
 import pandas as pd
 
+import session               # DST-aware cash session (see session.py)
+
 import torch
 import torch.nn as nn
 from sklearn.cluster import KMeans
@@ -44,8 +46,6 @@ import matplotlib.pyplot as plt
 
 ROOT      = os.path.dirname(os.path.abspath(__file__))
 CACHE     = os.path.join(ROOT, 'cache')
-RTH_START = 14 * 60 + 30
-RTH_END   = 21 * 60 + 0
 SEED      = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
 
@@ -59,8 +59,7 @@ np.random.seed(SEED); torch.manual_seed(SEED)
 def load_rth():
     es = pd.read_parquet(os.path.join(CACHE, 'es_continuous.parquet'))
     es.index = pd.to_datetime(es.index)
-    t = es.index.hour * 60 + es.index.minute
-    return es[(t >= RTH_START) & (t < RTH_END)].copy()
+    return session.get_rth(es)
 
 
 def build_open_paths(rth, window, sign_at=10):

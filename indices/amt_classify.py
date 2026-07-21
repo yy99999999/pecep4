@@ -6,8 +6,12 @@ from scipy.signal import find_peaks
 TICK      = 0.25
 TOL       = 4 * TICK
 VA_PCT    = 0.70
-RTH_START = 14 * 60 + 30
-RTH_END   = 21 * 60 + 0
+
+# NOTE: the cash session is NOT defined here any more. It used to be two fixed UTC
+# minute constants (14:30-21:00), which is the US session only under EST — on EDT days
+# that silently selected 10:30-17:00 ET (wrong "open", the SECOND hour as the "IB", and
+# an hour past the close). 65% of the history is EDT. Session handling now lives in
+# session.py (DST-aware); callers must pass already-filtered RTH bars into this module.
 
 
 # ─────────────────────────────────────────────────────────────

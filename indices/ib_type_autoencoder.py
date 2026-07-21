@@ -24,6 +24,8 @@ import os, argparse, logging
 import numpy as np
 import pandas as pd
 
+import session               # DST-aware cash session (see session.py)
+
 import torch
 import torch.nn as nn
 from sklearn.cluster import KMeans
@@ -38,8 +40,6 @@ import matplotlib.pyplot as plt
 
 ROOT      = os.path.dirname(os.path.abspath(__file__))
 CACHE     = os.path.join(ROOT, 'cache')
-RTH_START = 14 * 60 + 30
-RTH_END   = 21 * 60 + 0
 SEED      = 7
 TEST_FROM = pd.Timestamp('2020-01-01')
 IBW       = 60          # initial-balance window (minutes)
@@ -154,8 +154,7 @@ def main():
 
     es = pd.read_parquet(os.path.join(CACHE, 'es_continuous.parquet'))
     es.index = pd.to_datetime(es.index)
-    t = es.index.hour * 60 + es.index.minute
-    rth = es[(t >= RTH_START) & (t < RTH_END)].copy()
+    rth = session.get_rth(es)
     days = pd.read_parquet(os.path.join(CACHE, 'es_days.parquet')); days.index = pd.to_datetime(days.index)
 
     log.info('building IB structural descriptors …')
